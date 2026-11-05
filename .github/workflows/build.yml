@@ -1,0 +1,33 @@
+name: Build HTMLRD
+
+# Runs on every push, and can also be started by hand from the Actions tab.
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get the project
+        uses: actions/checkout@v4
+
+      - name: Install the CE C/C++ Toolchain
+        run: |
+          curl -fsSL -o CEdev-Linux.tar.gz \
+            https://github.com/CE-Programming/toolchain/releases/latest/download/CEdev-Linux.tar.gz
+          tar -xzf CEdev-Linux.tar.gz -C "$HOME"
+          chmod +x "$HOME"/CEdev/bin/*
+          echo "$HOME/CEdev/bin" >> "$GITHUB_PATH"
+
+      - name: Show compiler version
+        run: ez80-clang --version
+
+      - name: Build
+        run: make
+
+      - name: Keep the built program
+        uses: actions/upload-artifact@v4
+        with:
+          name: HTMLRD
+          path: bin/HTMLRD.8xp
